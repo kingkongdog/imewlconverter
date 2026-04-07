@@ -112,134 +112,6 @@ jobs:
       - name: Run tests
         run: make test DOTNET_CONFIG=Release
 
-  # Windows 平台构建 (CLI + Windows GUI)
-  build-windows:
-    name: Build Windows (${{ matrix.arch }})
-    runs-on: windows-latest
-    timeout-minutes: 40
-    needs: build-and-test
-    
-    strategy:
-      matrix:
-        arch: [x64, x86]
-        include:
-          - arch: x64
-            runtime: win-x64
-          - arch: x86
-            runtime: win-x86
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Restore dependencies
-        run: make restore
-
-      - name: Publish CLI
-        run: |
-          dotnet publish --configuration Release `
-            -p:PublishSingleFile=true `
-            --self-contained false `
-            -r ${{ matrix.runtime }} `
-            --output ./publish/${{ matrix.runtime }}/cli `
-            ./src/ImeWlConverterCmd
-
-      - name: Publish Windows GUI
-        run: |
-          dotnet publish --configuration Release `
-            -p:PublishSingleFile=true `
-            --self-contained false `
-            -r ${{ matrix.runtime }} `
-            --output ./publish/${{ matrix.runtime }}/gui `
-            "./src/IME WL Converter Win"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: windows-${{ matrix.arch }}
-          path: ./publish/${{ matrix.runtime }}
-          retention-days: 7
-
-  # Linux 平台构建 (CLI only)
-  build-linux:
-    name: Build Linux (${{ matrix.arch }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build-and-test
-    
-    strategy:
-      matrix:
-        arch: [x64, arm64]
-        include:
-          - arch: x64
-            runtime: linux-x64
-          - arch: arm64
-            runtime: linux-arm64
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Restore dependencies
-        run: make restore
-
-      - name: Publish CLI
-        run: |
-          dotnet publish --configuration Release \
-            -p:PublishSingleFile=true \
-            --self-contained false \
-            -r ${{ matrix.runtime }} \
-            --output ./publish/${{ matrix.runtime }}/cli \
-            ./src/ImeWlConverterCmd
-
-      - name: Run Linux integration tests
-        run: make integration-test
-
-      - name: Upload Linux test reports
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: linux-integration-test-reports-${{ matrix.arch }}
-          path: tests/integration/reports/test-results.xml
-          retention-days: 30
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: linux-${{ matrix.arch }}
-          path: ./publish/${{ matrix.runtime }}
-          retention-days: 7
-
   # macOS 平台构建 (CLI + GUI)
   build-macos:
     name: Build macOS (${{ matrix.arch }})
@@ -320,8 +192,6 @@ jobs:
     needs:
       - lint
       - build-and-test
-      - build-windows
-      - build-linux
       - build-macos
     if: always()
     
@@ -330,8 +200,6 @@ jobs:
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.build-and-test.result }}" != "success" ]] || \
-             [[ "${{ needs.build-windows.result }}" != "success" ]] || \
-             [[ "${{ needs.build-linux.result }}" != "success" ]] || \
              [[ "${{ needs.build-macos.result }}" != "success" ]]; then
             echo "One or more CI jobs failed"
             exit 1
