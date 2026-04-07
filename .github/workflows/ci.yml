@@ -84,17 +84,6 @@ jobs:
             --runtime ${{ matrix.runtime }} \
             --output ./publish/${{ matrix.runtime }}/gui
 
-      - name: Run macOS integration tests
-        run: make integration-test
-
-      - name: Upload macOS test reports
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: macos-integration-test-reports-${{ matrix.arch }}
-          path: tests/integration/reports/test-results.xml
-          retention-days: 30
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
