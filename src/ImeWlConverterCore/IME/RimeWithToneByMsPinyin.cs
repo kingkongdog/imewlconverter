@@ -79,7 +79,7 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
             var firstChar = segment[0];
             if ((firstChar >= 'a' && firstChar <= 'z') || (firstChar >= 'A' && firstChar <= 'Z'))   // 英文单词
             {
-                sb.Append(segment + "5");
+                // sb.Append(segment + "5");
                 length += segment.Length;
             }
             else    // 中文
@@ -89,8 +89,8 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
                 if (pinyin == null) throw new Exception("找不到字[" + segment[0] + "]的拼音");
                 sb.Append(pinyin);
                 length++;
+                if (i != matches.Count - 1) sb.Append(" ");
             }
-            if (i != matches.Count - 1) sb.Append(" ");
         }
         
         return PinyinHelper.ConvertToneNumbersToMarks(sb.ToString());
