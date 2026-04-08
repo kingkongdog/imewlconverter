@@ -3,8 +3,8 @@ name: Release
 # 仅在创建 tag 时触发
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches:
+      - master
   workflow_dispatch: # 允许手动触发
 
 # 权限配置
