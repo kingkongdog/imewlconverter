@@ -24,7 +24,7 @@ using Studyzy.IMEWLConverter.Helpers;
 
 namespace Studyzy.IMEWLConverter.IME;
 
-[ComboBoxShow(ConstantString.RIME_WITH_TONE_BY_MS_PINYIN, ConstantString.RIME_C_WITH_TONE_BY_MS_PINYIN,  2)]
+[ComboBoxShow(ConstantString.RIME_WITH_TONE_BY_MS_PINYIN, ConstantString.RIME_C_WITH_TONE_BY_MS_PINYIN,  1)]
 public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibraryTextImport
 {
     #region IWordLibraryExport 成员
