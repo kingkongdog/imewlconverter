@@ -39,8 +39,8 @@ public class Rime : BaseTextImport, IWordLibraryTextImport, IWordLibraryExport, 
 
     public Rime()
     {
-        CodeType = CodeType.TerraPinyin;
-        OS = OperationSystem.MacOS;
+        CodeType = CodeType.Pinyin;
+        OS = OperationSystem.Windows;
     }
 
     public OperationSystem OS
@@ -89,7 +89,7 @@ public class Rime : BaseTextImport, IWordLibraryTextImport, IWordLibraryExport, 
                 return "\r\n";
 
             case OperationSystem.MacOS:
-                return "\n";
+                return "\r";
 
             case OperationSystem.Linux:
                 return "\n";

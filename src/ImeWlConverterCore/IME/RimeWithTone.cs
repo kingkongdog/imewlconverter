@@ -17,148 +17,244 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
-using System.Xml;
 using Studyzy.IMEWLConverter.Entities;
+using Studyzy.IMEWLConverter.Generaters;
 using Studyzy.IMEWLConverter.Helpers;
 
 namespace Studyzy.IMEWLConverter.IME;
 
-[ComboBoxShow(ConstantString.MS_PINYIN, ConstantString.MS_PINYIN_C, 135)]
-public class MsPinyin : BaseImport, IWordLibraryExport, IWordLibraryTextImport
+/// <summary>
+///     RIME是一个输入法框架，支持多种输入法编码，词库规则是：
+///     词语+Tab+编码（拼音空格隔开）+Tab+词频
+/// </summary>
+[ComboBoxShow(ConstantString.RIME, ConstantString.RIME_C, 150)]
+public class Rime : BaseTextImport, IWordLibraryTextImport, IWordLibraryExport, IMultiCodeType
 {
+    private string lineSplitString;
+
+    private OperationSystem os;
+
+    public Rime()
+    {
+        CodeType = CodeType.TerraPinyin;
+        OS = OperationSystem.MacOS;
+    }
+
+    public OperationSystem OS
+    {
+        get => os;
+        set
+        {
+            os = value;
+            lineSplitString = GetLineSplit(os);
+        }
+    }
+
+    #region IWordLibraryImport 成员
+
+    //private IWordCodeGenerater pyGenerater=new PinyinGenerater();
+    public override WordLibraryList ImportLine(string line)
+    {
+        var wll = new WordLibraryList();
+        var lineArray = line.Split('\t');
+        if (lineArray.Length < 2) {
+            return wll; // 无效行，返回空列表
+        }
+
+        var word = lineArray[0];
+        var code = lineArray[1];
+        var wl = new WordLibrary();
+        wl.Word = word;
+        if (lineArray.Length >= 3) wl.Rank = Convert.ToInt32(lineArray[2]);
+        if (CodeType == CodeType.Pinyin)
+            wl.PinYin = code.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        else
+            //wl.PinYin = CollectionHelper.ToArray(pyGenerater.GetCodeOfString(wl.Word));
+            wl.SetCode(CodeType, code);
+
+        wll.Add(wl);
+        return wll;
+    }
+
+    #endregion
+
+    private string GetLineSplit(OperationSystem os)
+    {
+        switch (os)
+        {
+            case OperationSystem.Windows:
+                return "\r\n";
+
+            case OperationSystem.MacOS:
+                return "\n";
+
+            case OperationSystem.Linux:
+                return "\n";
+        }
+
+        return "\r\n";
+    }
+
     #region IWordLibraryExport 成员
 
-    public Encoding Encoding => Encoding.UTF8;
+    private IWordCodeGenerater codeGenerater;
+
+    //private RimeConfigForm form;
 
     public string ExportLine(WordLibrary wl)
     {
         var sb = new StringBuilder();
-        sb.Append("<ns1:DictionaryEntry>\r\n");
-        sb.Append("<ns1:InputString>" + GetPinyinWithTone(wl) + "</ns1:InputString>\r\n");
-        sb.Append("<ns1:OutputString>" + wl.Word + "</ns1:OutputString>\r\n");
-        sb.Append("<ns1:Exist>1</ns1:Exist>\r\n");
-        sb.Append("</ns1:DictionaryEntry>");
+        if (
+            CodeType == wl.CodeType
+            && CodeType != CodeType.Pinyin
+            && CodeType != CodeType.TerraPinyin
+        )
+            return wl.Word + "\t" + wl.Codes[0][0] + "\t" + wl.Rank;
+
+        if (codeGenerater == null) codeGenerater = CodeTypeHelper.GetGenerater(CodeType);
+        try
+        {
+            codeGenerater.GetCodeOfWordLibrary(wl);
+        }
+        catch (Exception ex)
+        {
+            // 生成编码失败时，记录警告并抛出异常，以便上层调用者知晓
+            Debug.WriteLine($"为词条 '{wl.Word}' 生成编码失败: {ex.Message}");
+            throw new Exception($"无法为词条 '{wl.Word}' 生成拼音编码: {ex.Message}", ex);
+        }
+
+        // 检查是否成功生成了编码
+        if (wl.Codes == null || wl.Codes.Count == 0 || string.IsNullOrEmpty(wl.SingleCode))
+        {
+            throw new Exception($"为词条 '{wl.Word}' 生成的拼音编码为空");
+        }
+
+        if (codeGenerater.Is1CharMutiCode)
+        {
+            var codes = codeGenerater.GetCodeOfString(wl.Word).ToCodeString(" ");
+            var i = 0;
+            foreach (var code in codes)
+            {
+                sb.Append(wl.Word);
+                sb.Append("\t");
+                sb.Append(code);
+                sb.Append("\t");
+                sb.Append(wl.Rank);
+                i++;
+                if (i != codes.Count)
+                    sb.Append(lineSplitString);
+            }
+        }
+        else
+        {
+            sb.Append(wl.Word);
+            sb.Append("\t");
+            if (CodeType == CodeType.Pinyin || CodeType == CodeType.TerraPinyin)
+                sb.Append(wl.GetPinYinString(" ", BuildType.None));
+            else if (CodeType == wl.CodeType)
+                sb.Append(wl.Codes[0][0]);
+            else
+                sb.Append(wl.Codes.ToCodeString(" ")[0]);
+            sb.Append("\t");
+            sb.Append(wl.Rank);
+        }
 
         return sb.ToString();
     }
 
     public IList<string> Export(WordLibraryList wlList)
     {
-        var sb = new StringBuilder();
-        sb.Append(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n<ns1:Dictionary xmlns:ns1=\"http://www.microsoft.com/ime/dctx\">"
-        );
-        sb.Append(
-            @"<ns1:DictionaryHeader>
-    <ns1:DictionaryGUID>{"
-            + Guid.NewGuid()
-            + @"}</ns1:DictionaryGUID>
-    <ns1:DictionaryLanguage>zh-cn</ns1:DictionaryLanguage>
-    <ns1:FormatVersion>0</ns1:FormatVersion>
-    <ns1:DictionaryVersion>1</ns1:DictionaryVersion>
-    <ns1:DictionaryInfo Language=""zh-cn"">
-      <ns1:ShortName>深蓝词库</ns1:ShortName>
-      <ns1:LongName>深蓝词库转换而成</ns1:LongName>
-      <ns1:Description>Dictionary for IME</ns1:Description>
-      <ns1:Copyright>深蓝词库转换</ns1:Copyright>
-      <ns1:CommentHeader1>CommentTitle1</ns1:CommentHeader1>
-      <ns1:CommentHeader2>CommentTitle1</ns1:CommentHeader2>
-      <ns1:CommentHeader3>CommentTitle1</ns1:CommentHeader3>
-    </ns1:DictionaryInfo>
-    <ns1:DictionaryInfo Language=""en-us"">
-      <ns1:ShortName>Shenlan</ns1:ShortName>
-      <ns1:LongName>Shenlan</ns1:LongName>
-      <ns1:Description>Shenlan</ns1:Description>
-      <ns1:Copyright>Shenlan</ns1:Copyright>
-      <ns1:CommentHeader1>CommentTitle1</ns1:CommentHeader1>
-      <ns1:CommentHeader2>CommentTitle1</ns1:CommentHeader2>
-      <ns1:CommentHeader3>CommentTitle1</ns1:CommentHeader3>
-    </ns1:DictionaryInfo>
-    <ns1:ContentCategory>Genral</ns1:ContentCategory>
-    <ns1:DictionaryType>Conversion</ns1:DictionaryType>
-    <ns1:SourceURL>
-    </ns1:SourceURL>
-    <ns1:CommentInsertion>true</ns1:CommentInsertion>
-    <ns1:IconID>25</ns1:IconID>
-  </ns1:DictionaryHeader>
-"
-        );
+        codeGenerater = CodeTypeHelper.GetGenerater(CodeType);
+
+        // 使用字典进行去重和词频合并
+        var uniqueWords = new Dictionary<string, WordLibrary>();
+        int duplicateCount = 0;
+        int inputCount = wlList.Count;
+
         for (var i = 0; i < wlList.Count; i++)
-            try
+        {
+            var wl = wlList[i];
+
+            // 先生成编码（如果需要）
+            if (CodeType != wl.CodeType || CodeType == CodeType.Pinyin || CodeType == CodeType.TerraPinyin)
             {
-                sb.Append(ExportLine(wlList[i]));
-                sb.Append("\r\n");
-            }
-            catch
-            {
+                try
+                {
+                    if (codeGenerater == null) codeGenerater = CodeTypeHelper.GetGenerater(CodeType);
+                    codeGenerater.GetCodeOfWordLibrary(wl);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"为词条 '{wl.Word}' 生成编码失败: {ex.Message}");
+                    continue; // 跳过无法生成编码的词条
+                }
             }
 
-        sb.Append("</ns1:Dictionary>");
+            // 获取词条的编码字符串
+            string code;
+            if (CodeType == CodeType.Pinyin || CodeType == CodeType.TerraPinyin)
+            {
+                code = wl.GetPinYinString(" ", BuildType.None);
+            }
+            else if (CodeType == wl.CodeType)
+            {
+                code = wl.Codes[0][0];
+            }
+            else
+            {
+                var codes = wl.Codes.ToCodeString(" ");
+                code = codes.Count > 0 ? codes[0] : "";
+            }
+
+            // 创建唯一键: 词语+编码
+            string key = $"{wl.Word}\t{code}";
+
+            if (uniqueWords.ContainsKey(key))
+            {
+                // 发现重复，合并词频（取最大值）
+                var existing = uniqueWords[key];
+                existing.Rank = Math.Max(existing.Rank, wl.Rank);
+                duplicateCount++;
+                Debug.WriteLine($"合并重复词条: {wl.Word} {code} (词频: {existing.Rank})");
+            }
+            else
+            {
+                uniqueWords[key] = wl;
+            }
+        }
+
+        // 输出统计信息
+        if (duplicateCount > 0)
+        {
+            Debug.WriteLine($"检测到{duplicateCount}个重复词条，已自动合并");
+            Debug.WriteLine($"输入词条: {inputCount}, 去重后: {uniqueWords.Count}");
+        }
+
+        // 生成输出
+        var sb = new StringBuilder();
+
+        // 按词频排序后输出
+        var sortedWords = uniqueWords.Values
+            .OrderByDescending(w => w.Rank)
+            .ThenBy(w => w.Word);
+
+        foreach (var wl in sortedWords)
+        {
+            var line = ExportLine(wl);
+            if (!string.IsNullOrEmpty(line))
+            {
+                sb.Append(line);
+                sb.Append(lineSplitString);
+            }
+        }
+
         return new List<string> { sb.ToString() };
     }
 
-    private string GetPinyinWithTone(WordLibrary wl)
-    {
-        var sb = new StringBuilder();
-        for (var i = 0; i < wl.Word.Length; i++)
-        {
-            var c = wl.Word[i];
-            var py = wl.PinYin[i];
-            var pinyin = PinyinHelper.AddToneToPinyin(c, py);
-            if (pinyin == null) throw new Exception("找不到字[" + c + "]的拼音");
-            sb.Append(pinyin);
-            if (i != wl.Word.Length - 1) sb.Append(" ");
-        }
-
-        return sb.ToString();
-    }
-
-    #endregion
-
-    #region IWordLibraryImport 成员
-
-    public WordLibraryList Import(string path)
-    {
-        var str = FileOperationHelper.ReadFile(path, Encoding);
-        return ImportText(str);
-    }
-
-    public WordLibraryList ImportText(string str)
-    {
-        var xmlDoc = new XmlDocument();
-        xmlDoc.LoadXml(str);
-        var namespaceManager = new XmlNamespaceManager(xmlDoc.NameTable);
-        namespaceManager.AddNamespace("ns1", "http://www.microsoft.com/ime/dctx");
-        var wlList = new WordLibraryList();
-        var xns = xmlDoc.SelectNodes(
-            "//ns1:Dictionary/ns1:DictionaryEntry",
-            namespaceManager
-        );
-        CountWord = xns.Count;
-        for (var i = 0; i < xns.Count; i++)
-        {
-            var xn = xns[i];
-            var py = xn.SelectSingleNode("ns1:InputString", namespaceManager).InnerText;
-            var word = xn.SelectSingleNode("ns1:OutputString", namespaceManager).InnerText;
-            var wl = new WordLibrary();
-            wl.Word = word;
-            wl.Rank = 1;
-            wl.PinYin = py.Split(
-                new[] { ' ', '1', '2', '3', '4' },
-                StringSplitOptions.RemoveEmptyEntries
-            );
-            CurrentStatus = i;
-            wlList.Add(wl);
-        }
-
-        return wlList;
-    }
-
-    public WordLibraryList ImportLine(string line)
-    {
-        throw new NotImplementedException();
-    }
+    public override Encoding Encoding => new UTF8Encoding(false);
 
     #endregion
 }
