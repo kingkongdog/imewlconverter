@@ -60,7 +60,6 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
             {
             }
 
-        sb.Append("</ns1:Dictionary>");
         return new List<string> { sb.ToString() };
     }
 
