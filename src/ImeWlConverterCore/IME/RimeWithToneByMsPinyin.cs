@@ -70,7 +70,18 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
         {
             var c = wl.Word[i];
             var py = wl.PinYin[i];
-            var pinyin = PinyinHelper.AddToneToPinyin(c, py);
+            
+            string pinyin;
+
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+            {
+                pinyin = c.ToString().ToLower() + "5";
+            }
+            else
+            {
+                pinyin = PinyinHelper.AddToneToPinyin(c, py);
+            }
+
             if (pinyin == null) throw new Exception("找不到字[" + c + "]的拼音");
             sb.Append(pinyin);
             if (i != wl.Word.Length - 1) sb.Append(" ");
