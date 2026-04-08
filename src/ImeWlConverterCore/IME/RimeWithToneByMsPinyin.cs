@@ -79,7 +79,7 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
             var firstChar = segment[0];
             if ((firstChar >= 'a' && firstChar <= 'z') || (firstChar >= 'A' && firstChar <= 'Z'))   // 英文单词
             {
-                // sb.Append(segment + "5");
+                // sb.Append(segment + "5");  // 影响简拼，没找到原因，先注释掉，拼音中忽略英文
                 length += segment.Length;
             }
             else    // 中文
