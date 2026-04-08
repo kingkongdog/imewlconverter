@@ -23,6 +23,59 @@ namespace Studyzy.IMEWLConverter.Helpers;
 
 public static class PinyinHelper
 {
+    private static readonly Dictionary<char, char[]> ToneMap = new Dictionary<char, char[]>
+    {
+        {'a', new[] {'ā', 'á', 'ǎ', 'à', 'a'}},
+        {'o', new[] {'ō', 'ó', 'ǒ', 'ò', 'o'}},
+        {'e', new[] {'ē', 'é', 'ě', 'è', 'e'}},
+        {'i', new[] {'ī', 'í', 'ǐ', 'ì', 'i'}},
+        {'u', new[] {'ū', 'ú', 'ǔ', 'ù', 'u'}},
+        {'v', new[] {'ǖ', 'ǘ', 'ǚ', 'ǜ', 'ü'}} // v 代表 ü
+    };
+
+    public static string ConvertToneNumbersToMarks(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+
+        // 匹配拼音结构的正则：[声母] + [韵母] + [1-5数字]
+        return Regex.Replace(input.ToLower(), @"([a-zü]+)([1-5])", m =>
+        {
+            string pinyin = m.Groups[1].Value;
+            int tone = int.Parse(m.Groups[2].Value);
+
+            if (tone == 5) return pinyin; // 五声（轻声）不标调
+
+            // 标调规则逻辑
+            int markIndex = -1;
+            if (pinyin.Contains("a")) markIndex = pinyin.IndexOf('a');
+            else if (pinyin.Contains("o")) markIndex = pinyin.IndexOf('o');
+            else if (pinyin.Contains("e")) markIndex = pinyin.IndexOf('e');
+            else if (pinyin.Contains("ui")) markIndex = pinyin.IndexOf('i'); // ui 标在 i 上
+            else if (pinyin.Contains("iu")) markIndex = pinyin.IndexOf('u'); // iu 标在 u 上
+            else
+            {
+                // 剩余情况标在最后一个元音上（如 i, u, v）
+                for (int i = pinyin.Length - 1; i >= 0; i--)
+                {
+                    if (ToneMap.ContainsKey(pinyin[i]))
+                    {
+                        markIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (markIndex != -1)
+            {
+                char targetChar = pinyin[markIndex];
+                char markedChar = ToneMap[targetChar][tone - 1];
+                return pinyin.Remove(markIndex, 1).Insert(markIndex, markedChar.ToString());
+            }
+
+            return pinyin + tone; // 如果没匹配到元音，原样返回
+        });
+    }
+    
     /// <summary>
     ///     获得一个字的默认拼音(不包含音调)
     /// </summary>

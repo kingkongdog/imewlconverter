@@ -77,7 +77,7 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
             if (i != wl.Word.Length - 1) sb.Append(" ");
         }
 
-        return sb.ToString();
+        return PinyinHelper.ConvertToneNumbersToMarks(sb.ToString());
     }
 
     #endregion
