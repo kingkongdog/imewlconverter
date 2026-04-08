@@ -37,7 +37,7 @@ public class RimeWithTone : BaseTextImport, IWordLibraryTextImport, IWordLibrary
 
     private OperationSystem os;
 
-    public Rime()
+    public RimeWithTone()
     {
         CodeType = CodeType.TerraPinyin;
         OS = OperationSystem.MacOS;
