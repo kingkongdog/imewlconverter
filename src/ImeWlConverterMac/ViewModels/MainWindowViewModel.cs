@@ -711,7 +711,7 @@ public class MainWindowViewModel : ViewModelBase
                     new("文本文件") { Patterns = new[] { "*.txt" } }
                 };
 
-                if (_export?.GetType().Name.Contains("MsPinyin") == true)
+                if (_export?.GetType().Name.Contains("MsPinyin") == true && _export?.GetType().Name != "RimeWithToneByMsPinyin")
                 {
                     defaultExt = ".dctx";
                     fileTypes.Insert(0, new("微软拼音") { Patterns = new[] { "*.dctx" } });
