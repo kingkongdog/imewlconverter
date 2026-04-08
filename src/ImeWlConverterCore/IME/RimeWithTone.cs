@@ -236,6 +236,17 @@ public class RimeWithTone : BaseTextImport, IWordLibraryTextImport, IWordLibrary
         // 生成输出
         var sb = new StringBuilder();
 
+        sb.Append(
+            "# 网络流行新词" + "\n" +
+            "# http://pinyin.sogou.com/dict/detail/index/4" + "\n" +
+            "# https://github.com/kingkongdog/imewlconverter" + "\n" +
+            "---" + "\n" +
+            "name: wangluoliuxing" + "\n" +
+            "version: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\n" +
+            "sort: by_weight" + "\n" +
+            "..." + "\n"
+        );
+
         // 按词频排序后输出
         var sortedWords = uniqueWords.Values
             .OrderByDescending(w => w.Rank)

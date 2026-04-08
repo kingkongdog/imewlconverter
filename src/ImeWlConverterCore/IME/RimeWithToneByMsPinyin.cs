@@ -54,7 +54,7 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
             try
             {
                 sb.Append(ExportLine(wlList[i]));
-                sb.Append("\r\n");
+                sb.Append("\n");
             }
             catch
             {
