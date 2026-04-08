@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Studyzy.IMEWLConverter.Helpers;
 
@@ -75,7 +76,7 @@ public static class PinyinHelper
             return pinyin + tone; // 如果没匹配到元音，原样返回
         });
     }
-    
+
     /// <summary>
     ///     获得一个字的默认拼音(不包含音调)
     /// </summary>
