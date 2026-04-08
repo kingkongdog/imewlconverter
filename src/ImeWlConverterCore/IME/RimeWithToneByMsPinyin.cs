@@ -85,7 +85,7 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
             else    // 中文
             {
                 var py = wl.PinYin[length];
-                var pinyin = PinyinHelper.AddToneToPinyin(segment, py);
+                var pinyin = PinyinHelper.AddToneToPinyin(segment[0], py);
                 if (pinyin == null) throw new Exception("找不到字[" + c + "]的拼音");
                 sb.Append(pinyin);
                 length++;
