@@ -108,6 +108,7 @@ public class ConstantString
     public const string FIT = "FIT输入法";
     public const string RIME = "Rime中州韵(不带声调)";
     public const string RIME_WITH_TONE = "Rime中州韵(带声调)(TerraPinyin方法)";
+    public const string RIME_WITH_TONE_BY_MS_PINYIN = "Rime中州韵(带声调)(微软拼音方法)";
     public const string RIME_USERDB = "Rime UserDb 用户词典";
     public const string CANGJIE_PLATFORM = "仓颉平台";
     public const string BING_PINYIN = "必应输入法";
@@ -158,6 +159,7 @@ public class ConstantString
     public const string FIT_C = "fit";
     public const string RIME_C = "rime";
     public const string RIME_C_WITH_TONE = "rime_with_tone";
+    public const string RIME_C_WITH_TONE_BY_MS_PINYIN = "rime_with_tone_by_ms_pinyin";
     public const string RIME_USERDB_C = "rimedb";
     public const string BING_PINYIN_C = "bing";
     public const string LINGOES_LD2_C = "ld2";
