@@ -121,12 +121,6 @@ public class ConsoleRun
             rimeExport.OS = pattern.OS;
         }
 
-        // 配置 Lingoes ld2 编码
-        if (wordLibraryImport is LingoesLd2 ld2Import && !string.IsNullOrEmpty(options.Ld2Encoding))
-        {
-            ConfigureLd2Encoding(options.Ld2Encoding, ld2Import);
-        }
-
         // 配置过滤器
         var filters = new List<ISingleFilter>();
         if (!string.IsNullOrEmpty(options.Filter))
