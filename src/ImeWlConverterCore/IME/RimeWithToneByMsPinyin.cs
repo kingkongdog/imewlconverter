@@ -66,45 +66,33 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
 
     private string GetPinyinWithTone(WordLibrary wl)
     {
+        string pattern = @"[\u4e00-\u9fa5]|[a-zA-Z]+";
+        MatchCollection matches = Regex.Matches(wl.Word, pattern);  // 把 "阿福app" 拆分成 阿、福、app 三段
+        
         var sb = new StringBuilder();
-        string previousType = "";
-        for (var i = 0; i < wl.Word.Length; i++)
+        var length = 0;
+
+        for (int i = 0; i < matches.Count; i++)
         {
-            var c = wl.Word[i];
-            var py = wl.PinYin[i];
-            string currentType = "";
-            
-            string pinyin;
+            var segment = matches[i].Value;
 
-            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+            var firstChar = segment[0];
+            if ((firstChar >= 'a' && firstChar <= 'z') || (firstChar >= 'A' && firstChar <= 'Z'))   // 英文单词
             {
-                pinyin = c.ToString().ToLower();
-                currentType = "en";
+                sb.Append(segment + "5");
+                length += segment.Length;
             }
-            else
+            else    // 中文
             {
-                pinyin = PinyinHelper.AddToneToPinyin(c, py);
-                currentType = "ch";
+                var py = wl.PinYin[length];
+                var pinyin = PinyinHelper.AddToneToPinyin(segment, py);
+                if (pinyin == null) throw new Exception("找不到字[" + c + "]的拼音");
+                sb.Append(pinyin);
+                length++;
             }
-
-            if (pinyin == null) throw new Exception("找不到字[" + c + "]的拼音");
-            
-            if(i != 0 && currentType != previousType)
-            {
-                if(previousType == "en" && currentType == "ch")
-                {
-                    sb.Append("5");
-                }
-                sb.Append(" ");
-            }
-            sb.Append(pinyin);
-            previousType = currentType;
+            if (i != matches.Count - 1) sb.Append(" ");
         }
-        if(previousType == "en")
-        {
-            sb.Append("5");
-        }
-
+        
         return PinyinHelper.ConvertToneNumbersToMarks(sb.ToString());
     }
 
