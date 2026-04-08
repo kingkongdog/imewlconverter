@@ -21,6 +21,7 @@ using System.Text;
 using System.Xml;
 using Studyzy.IMEWLConverter.Entities;
 using Studyzy.IMEWLConverter.Helpers;
+using System.Text.RegularExpressions;
 
 namespace Studyzy.IMEWLConverter.IME;
 
@@ -66,25 +67,42 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
     private string GetPinyinWithTone(WordLibrary wl)
     {
         var sb = new StringBuilder();
+        string previousType = "";
         for (var i = 0; i < wl.Word.Length; i++)
         {
             var c = wl.Word[i];
             var py = wl.PinYin[i];
+            string currentType = "";
             
             string pinyin;
 
             if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
             {
-                pinyin = c.ToString().ToLower() + "5";
+                pinyin = c.ToString().ToLower();
+                currentType = "en";
             }
             else
             {
                 pinyin = PinyinHelper.AddToneToPinyin(c, py);
+                currentType = "ch";
             }
 
             if (pinyin == null) throw new Exception("找不到字[" + c + "]的拼音");
+            
+            if(i != 0 && currentType != previousType)
+            {
+                if(previousType == "en" && currentType == "ch")
+                {
+                    sb.Append("5");
+                }
+                sb.Append(" ");
+            }
             sb.Append(pinyin);
-            if (i != wl.Word.Length - 1) sb.Append(" ");
+            previousType = currentType;
+        }
+        if(previousType == "en")
+        {
+            sb.Append("5");
         }
 
         return PinyinHelper.ConvertToneNumbersToMarks(sb.ToString());
