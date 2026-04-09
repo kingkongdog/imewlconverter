@@ -34,7 +34,7 @@ public class RimeWithToneIncludeEnglishByMsPinyin : BaseImport, IWordLibraryExpo
 
     public string ExportLine(WordLibrary wl)
     {
-        return $"{wl.Word}\t{GetPinyinWithTone(wl)}\t{wl.Rank}";
+        return $"{wl.Word}\t{GetPinyinWithTone(wl)}";
     }
 
     public IList<string> Export(WordLibraryList wlList)
