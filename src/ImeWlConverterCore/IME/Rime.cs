@@ -30,7 +30,7 @@ namespace Studyzy.IMEWLConverter.IME;
 ///     RIME是一个输入法框架，支持多种输入法编码，词库规则是：
 ///     词语+Tab+编码（拼音空格隔开）+Tab+词频
 /// </summary>
-[ComboBoxShow(ConstantString.RIME, ConstantString.RIME_C, 3)]
+[ComboBoxShow(ConstantString.RIME, ConstantString.RIME_C, 4)]
 public class Rime : BaseTextImport, IWordLibraryTextImport, IWordLibraryExport, IMultiCodeType
 {
     private string lineSplitString;

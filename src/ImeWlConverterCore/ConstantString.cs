@@ -108,8 +108,8 @@ public class ConstantString
     public const string FIT = "FIT输入法";
     public const string RIME = "Rime中州韵(不带声调)";
     public const string RIME_WITH_TONE = "Rime中州韵(带声调)(TerraPinyin方法)";
-    public const string RIME_WITH_TONE_BY_MS_PINYIN = "Rime中州韵(带声调)(微软拼音方法)";
-    public const string RIME_WITH_TONE_INCLUDE_ENGLISH_BY_MS_PINYIN = "Rime中州韵(带声调)(含英语词条)(微软拼音方法)";
+    public const string RIME_WITH_TONE_BY_MS_PINYIN = "Rime中州韵(带声调)(全部词条)(微软拼音方法)";
+    public const string RIME_WITH_TONE_INCLUDE_ENGLISH_BY_MS_PINYIN = "Rime中州韵(带声调)(含英语的词条)(微软拼音方法)";
     public const string RIME_USERDB = "Rime UserDb 用户词典";
     public const string CANGJIE_PLATFORM = "仓颉平台";
     public const string BING_PINYIN = "必应输入法";
