@@ -34,6 +34,67 @@ namespace Studyzy.IMEWLConverter;
 /// </summary>
 public class ConsoleRun
 {
+    // 防止代码修剪移除反射实例化的类型
+    private static readonly Type[] PreserveImportTypes = new Type[]
+    {
+        typeof(LingoesLd2),
+        typeof(SougouPinyinScel),
+        typeof(SougouPinyinBinFromPython),
+        typeof(Jidian_MBDict),
+        typeof(BaiduPinyinBdict),
+        typeof(QQPinyinQcel),
+        typeof(Gboard),
+        typeof(ZiGuangPinyinUwl),
+        typeof(BaiduPinyinBackup),
+        typeof(QQPinyinQpyd),
+        typeof(Win10MsPinyinSelfStudy),
+        typeof(Win10MsWubi),
+        typeof(BaiduShoujiBcd),
+        typeof(Win10MsPinyin),
+        typeof(SougouPinyin),
+        typeof(QQPinyin),
+        typeof(BaiduPinyin),
+        typeof(BaiduShouji),
+        typeof(GooglePinyin),
+        typeof(Rime),
+        typeof(SelfDefining),
+        typeof(PinyinJiaJia),
+        typeof(Chaoyin),
+        typeof(CangjiePlatform),
+        typeof(Wubi86),
+        typeof(Wubi98),
+        typeof(ZiGuangPinyin),
+        typeof(MsPinyin),
+        typeof(BingPinyin),
+        typeof(ShouxinPinyin),
+        typeof(SinaPinyin),
+        typeof(QQShouji),
+        typeof(QQWubi),
+        typeof(Xiaoxiao),
+        typeof(XiaoyaWubi),
+        typeof(YahooKeyKey),
+        typeof(iFlyIME),
+        typeof(ChinesePyim),
+        typeof(FitInput),
+        typeof(LibIMEText),
+        typeof(Libpinyin),
+        typeof(MacPlist),
+        typeof(NoPinyinWordOnly),
+        typeof(QQPinyinEng),
+        typeof(RimeUserDb),
+        typeof(RimeWithTone),
+        typeof(RimeWithToneByMsPinyin),
+        typeof(RimeWithToneIncludeEnglishByMsPinyin),
+        typeof(SougouPinyinDict),
+        typeof(UserDefinePhrase),
+        typeof(WubiNewAge),
+        typeof(XiaoxiaoErbi),
+        typeof(BaiduShoujiEng),
+        typeof(Jidian),
+        typeof(JidianZhengma),
+        typeof(Emoji)
+    };
+
     private readonly List<ComboBoxShowAttribute> cbxExportItems = new();
     private readonly List<ComboBoxShowAttribute> cbxImportItems = new();
 
