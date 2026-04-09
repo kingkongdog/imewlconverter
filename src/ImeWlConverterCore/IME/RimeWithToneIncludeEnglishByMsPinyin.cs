@@ -25,8 +25,8 @@ using System.Text.RegularExpressions;
 
 namespace Studyzy.IMEWLConverter.IME;
 
-[ComboBoxShow(ConstantString.RIME_WITH_TONE_BY_MS_PINYIN, ConstantString.RIME_C_WITH_TONE_BY_MS_PINYIN,  1)]
-public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibraryTextImport
+[ComboBoxShow(ConstantString.RIME_WITH_TONE_INCLUDE_ENGLISH_BY_MS_PINYIN, ConstantString.RIME_C_WITH_TONE_INCLUDE_ENGLISH_BY_MS_PINYIN,  2)]
+public class RimeWithToneIncludeEnglishByMsPinyin : BaseImport, IWordLibraryExport, IWordLibraryTextImport
 {
     #region IWordLibraryExport 成员
 
@@ -41,11 +41,11 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
     {
         var sb = new StringBuilder();
         sb.Append(
-            "# 网络流行新词" + "\n" +
+            "# 网络流行新词，含英语的词条" + "\n" +
             "# http://pinyin.sogou.com/dict/detail/index/4" + "\n" +
             "# https://github.com/kingkongdog/imewlconverter" + "\n" +
             "---" + "\n" +
-            "name: wangluoliuxing" + "\n" +
+            "name: wangluoliuxing_en" + "\n" +
             "version: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\n" +
             "sort: by_weight" + "\n" +
             "..." + "\n"
@@ -54,8 +54,12 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
         for (var i = 0; i < wlList.Count; i++)
             try
             {
-                sb.Append(ExportLine(wlList[i]));
-                sb.Append("\n");
+                bool hasLetter = Regex.IsMatch(wlList[i].Word, "[a-zA-Z]");
+                if(hasLetter)
+                {
+                    sb.Append(ExportLine(wlList[i]));
+                    sb.Append("\n");
+                }
             }
             catch
             {
@@ -79,7 +83,7 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
             var firstChar = segment[0];
             if ((firstChar >= 'a' && firstChar <= 'z') || (firstChar >= 'A' && firstChar <= 'Z'))   // 英文单词
             {
-                // sb.Append(segment + "5");  // 影响简拼，没找到原因，先注释掉，拼音中忽略英文
+                sb.Append(segment.ToLower() + "5");
                 length += segment.Length;
             }
             else    // 中文
@@ -89,8 +93,8 @@ public class RimeWithToneByMsPinyin : BaseImport, IWordLibraryExport, IWordLibra
                 if (pinyin == null) throw new Exception("找不到字[" + segment[0] + "]的拼音");
                 sb.Append(pinyin);
                 length++;
-                if (i != matches.Count - 1) sb.Append(" ");
             }
+            if (i != matches.Count - 1) sb.Append("'");
         }
         
         return PinyinHelper.ConvertToneNumbersToMarks(sb.ToString());
