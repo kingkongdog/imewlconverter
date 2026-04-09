@@ -20,8 +20,8 @@
         <DebugType>none</DebugType>
         <DebugSymbols>false</DebugSymbols>
         
-        <!-- 启用代码裁剪 -->
-        <PublishTrimmed>true</PublishTrimmed>
+        <!-- 暂时禁用代码裁剪以避免反射实例化问题 -->
+        <PublishTrimmed>false</PublishTrimmed>
         
         <!-- 单文件发布 -->
         <PublishSingleFile>true</PublishSingleFile>
